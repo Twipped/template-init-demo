@@ -34,6 +34,25 @@ jobs:
         with:
           node-version: 16
       
+      - name: Install jq
+        id: install-jq
+        shell: bash
+        run: |
+          mkdir -p ${HOME}/.local/bin
+          wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -O ${HOME}/.local/bin/jq
+          chmod +x ${HOME}/.local/bin/jq
+          echo "::set-output name=jq-binary::${HOME}/.local/bin/jq"
+
+      - name: Get repo description
+        run: |
+          echo 'REPO_DESCRIPTION<<EOF' >> $GITHUB_ENV
+          curl -s https://api.github.com/repos/ruby/ruby | jq -r '.description' >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+
+          curl -s https://api.github.com/repos/ruby/ruby | jq -r '.description'
+          echo "{environment_variable_name}={value}" >> $GITHUB_ENV
+
+      - run: echo "${{ env.REPO_DESCRIPTION }}"
       #
       # Run tmplr with required environment variables,
       # and remove the template recipe afterwards.
@@ -41,18 +60,18 @@ jobs:
       # Use this to get all the values you want from GitHub Action contexts
       # and set them as environment variables for tmplr.
       #
-      - name: Apply template
-        if: steps.template_exists.outputs.files_exists == 'true'
-        run: npx tmplr && rm -fr .tmplr.yml && rm -fr .github/workflows/init.yml
-        env:
-          owner_name: ${{ github.event.repository.owner.name }}
-          owner_email: ${{ github.event.repository.owner.email }}
-          repo_name: ${{ github.event.repository.name }}
-          repo_url: ${{ github.event.repository.ssh_url }}
+      # - name: Apply template
+      #   if: steps.template_exists.outputs.files_exists == 'true'
+      #   run: npx tmplr && rm -fr .tmplr.yml && rm -fr .github/workflows/init.yml
+      #   env:
+      #     owner_name: ${{ github.event.repository.owner.name }}
+      #     owner_email: ${{ github.event.repository.owner.email }}
+      #     repo_name: ${{ github.event.repository.name }}
+      #     repo_url: ${{ github.event.repository.ssh_url }}
 
-      #
-      # Commit the code
-      #
-      - uses: EndBug/add-and-commit@v9
-        with:
-          message: Initialize from template
+      # #
+      # # Commit the code
+      # #
+      # - uses: EndBug/add-and-commit@v9
+      #   with:
+      #     message: Initialize from template
