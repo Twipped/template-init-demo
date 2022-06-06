@@ -46,7 +46,9 @@ jobs:
       - name: Get repo description
         run: |
           echo 'repo_description<<EOF' >> $GITHUB_ENV
-          curl -s https://api.github.com/repos/${{ github.repository }} | jq -r '.description' >> $GITHUB_ENV
+          curl -s https://api.github.com/repos/${{ github.repository }} \
+          --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+          | jq -r '.description' >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
 
       - run: echo "${{ env.repo_description }}"
@@ -72,8 +74,7 @@ jobs:
       # Commit the code
       #
       - name: Git Commit/Push Changes
-        uses: actions-x/commit@v2.9
+        uses: actions-x/commit@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          push-branch: 'main'
-          commit-message: 'Initialized template.'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          message: 'Initialized template.'
