@@ -52,16 +52,16 @@ jobs:
           echo 'EOF' >> $GITHUB_ENV
 
       - name: Apply template
-        if: steps.template_exists.outputs.files_exists == 'true'
         run: |
           grep -RiIl 'app-template-ui' . --exclude ./github --exclude ./node_modules | xargs sed -i '' -e 's/app-template-ui/'${{ github.event.repository.name }}'/g'
           grep -RiIl 'APP_DESCRIPTION_GOES_HERE' . --exclude ./github --exclude ./node_modules | xargs sed -i '' -e 's/APP_DESCRIPTION_GOES_HERE/'${{ env.repo_description }}'/g'
+          ls -al
 
       - name: Delete Template Readme
-        run: rm README.md
+        run: rm ${{ github.workspace }}/README.md
 
       - name: Delete this script.
-        run: rm .github/workflows/init.yml
+        run: rm ${{ github.workspace }}/.github/workflows/init.yml
 
       - name: Git Commit/Push Changes
         uses: actions-x/commit@v6
