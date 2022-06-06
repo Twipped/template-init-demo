@@ -1,0 +1,11 @@
+# .tmplr.yml
+steps:
+  - read: project_name
+    from: git.remote_name
+    fallback:
+      from: path.rootdir
+  
+  - read: clone_url
+    from: git.remote_url
+  
+  - update: README.md
