@@ -13,7 +13,7 @@ jobs:
     #
     # Change this to make sure your workflow doesn't initialize on your template!
     #
-    if: github.repository != 'nFinus/template-init-test'
+    # if: github.repository != 'nFinus/template-init-test'
 
     runs-on: ubuntu-latest
     steps:
