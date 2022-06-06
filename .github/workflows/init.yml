@@ -66,10 +66,6 @@ jobs:
         if: steps.runonce_exists.outputs.files_exists == 'true'
         run: rm ${{ github.workspace }}/./scripts/runOnce.sh
 
-      - name: Delete the workflow.
-        if: steps.runonce_exists.outputs.files_exists == 'true'
-        run: rm ${{ github.workspace }}/./.github/init.yml
-
       - name: Git Commit/Push Changes
         if: steps.runonce_exists.outputs.files_exists == 'true'
         uses: actions-x/commit@v6
