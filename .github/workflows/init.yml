@@ -13,7 +13,7 @@ jobs:
     #
     # Change this to make sure your workflow doesn't initialize on your template!
     #
-    # if: github.repository != 'nFinus/template-init-test'
+    if: github.repository != 'nFinus/template-init-test'
 
     runs-on: ubuntu-latest
     steps:
@@ -45,33 +45,35 @@ jobs:
 
       - name: Get repo description
         run: |
-          echo 'REPO_DESCRIPTION<<EOF' >> $GITHUB_ENV
-          curl -s https://api.github.com/repos/ruby/ruby | jq -r '.description' >> $GITHUB_ENV
+          echo 'repo_description<<EOF' >> $GITHUB_ENV
+          curl -s https://api.github.com/repos/${{ github.repository }} | jq -r '.description' >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
 
-          curl -s https://api.github.com/repos/ruby/ruby | jq -r '.description'
-          echo "{environment_variable_name}={value}" >> $GITHUB_ENV
-
-      - run: echo "${{ env.REPO_DESCRIPTION }}"
+      - run: echo "${{ env.repo_description }}"
       #
       # Run tmplr with required environment variables,
       # and remove the template recipe afterwards.
       #
       # Use this to get all the values you want from GitHub Action contexts
       # and set them as environment variables for tmplr.
-      #
-      # - name: Apply template
-      #   if: steps.template_exists.outputs.files_exists == 'true'
-      #   run: npx tmplr && rm -fr .tmplr.yml && rm -fr .github/workflows/init.yml
-      #   env:
-      #     owner_name: ${{ github.event.repository.owner.name }}
-      #     owner_email: ${{ github.event.repository.owner.email }}
-      #     repo_name: ${{ github.event.repository.name }}
-      #     repo_url: ${{ github.event.repository.ssh_url }}
+      
+      - name: Apply template
+        if: steps.template_exists.outputs.files_exists == 'true'
+        run: npx tmplr && rm -fr .tmplr.yml && rm -fr .github/workflows/init.yml
+        env:
+          owner_name: ${{ github.event.repository.owner.name }}
+          owner_email: ${{ github.event.repository.owner.email }}
+          repo_name: ${{ github.event.repository.name }}
+          repo_url: ${{ github.event.repository.ssh_url }}
+          repo_path: ${{ github.repository }}
+          repo_description: ${{ env.repo_description }}
 
-      # #
-      # # Commit the code
-      # #
-      # - uses: EndBug/add-and-commit@v9
-      #   with:
-      #     message: Initialize from template
+      #
+      # Commit the code
+      #
+      - name: Git Commit/Push Changes
+        uses: actions-x/commit@v2.9
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          push-branch: 'main'
+          commit-message: 'Initialized template.'
