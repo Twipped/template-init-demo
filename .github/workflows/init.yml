@@ -3,9 +3,10 @@ name: Initialize Template
 
 on:
   push:
-    branches: main
+    branches:
+      - main
     paths:
-      scripts/init/runOnce.sh
+      - scripts/init/runOnce.sh
 
 jobs:
   precheck:
