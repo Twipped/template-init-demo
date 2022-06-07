@@ -8,8 +8,8 @@ on:
 
 jobs:
   precheck:
-    # Critical step, this ensures this workflow doesn't run on the template itself.
-    if: github.repository != 'nFinus/template-init-test'
+    # Critical step, this ensures this workflow doesn't run after the first commit
+    if: github.event.head_commit.message == "Initial commit"
     runs-on: ubuntu-latest
     outputs:
       exists: ${{ steps.runonce_exists.outputs.files_exists }}
