@@ -1,33 +1,36 @@
-# .github/workflows/init.yml
+
 name: Initialize Template
 
-#
-# Run this on creation of a branch or ref
-#
 on:
   push:
     branches: main
 
 jobs:
-  build:
-    #
-    # Change this to make sure your workflow doesn't initialize on your template!
-    #
+  precheck:
+    # Critical step, this ensures this workflow doesn't run on the template itself.
     if: github.repository != 'nFinus/template-init-test'
-
     runs-on: ubuntu-latest
+    outputs:
+      exists: ${{ steps.runonce_exists.outputs.files_exists }}
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v2
 
-      #
-      # Check if there is a template recipe
-      #
+      # Check if the setup script still exists. if it doesn't,
+      # this workflow should do nothing.
       - id: runonce_exists
         name: Check if runonce script exists
         uses: andstor/file-existence-action@v1
         with:
-          files: scripts/runOnce.sh
+          files: scripts/init/runOnce.sh
+
+  template:
+    needs: precheck
+    if: ${{ needs.precheck.outputs.alive == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v2
 
       - name: Set up Node.js
         uses: actions/setup-node@v2
@@ -43,7 +46,7 @@ jobs:
           chmod +x ${HOME}/.local/bin/jq
           echo "::set-output name=jq-binary::${HOME}/.local/bin/jq"
 
-      - name: Get repo description
+      - name: Fetch the repo description from github api
         run: |
           echo 'repo_description<<EOF' >> $GITHUB_ENV
           curl -s https://api.github.com/repos/${{ github.repository }} \
@@ -51,23 +54,19 @@ jobs:
             | jq -r '.description' >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
 
-      - name: Apply template
-        if: steps.runonce_exists.outputs.files_exists == 'true'
+      - name: Run the init script to replace repo name and description
         env:
           repo_name: ${{ github.event.repository.name }}
           repo_description: ${{ env.repo_description }}
-        run: exec ./scripts/runOnce.sh
+        run: exec ${{ github.workspace }}/scripts/runOnce.sh
 
       - name: Delete Template Readme
-        if: steps.runonce_exists.outputs.files_exists == 'true'
         run: rm ${{ github.workspace }}/README.md
 
       - name: Delete the script.
-        if: steps.runonce_exists.outputs.files_exists == 'true'
-        run: rm ${{ github.workspace }}/./scripts/runOnce.sh
+        run: rm ${{ github.workspace }}/scripts/init/runOnce.sh
 
       - name: Git Commit/Push Changes
-        if: steps.runonce_exists.outputs.files_exists == 'true'
         uses: actions-x/commit@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
