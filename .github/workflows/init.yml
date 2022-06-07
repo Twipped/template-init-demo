@@ -14,9 +14,6 @@ jobs:
     outputs:
       exists: ${{ steps.runonce_exists.outputs.files_exists }}
     steps:
-      - name: Dump context
-        uses: crazy-max/ghaction-dump-context@v1
-
       - name: Check out Git repository
         uses: actions/checkout@v2
 
