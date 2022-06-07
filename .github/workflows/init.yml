@@ -4,6 +4,8 @@ name: Initialize Template
 on:
   push:
     branches: main
+    paths:
+      scripts/init/runOnce.sh
 
 jobs:
   precheck:
@@ -26,7 +28,7 @@ jobs:
 
   template:
     needs: precheck
-    if: ${{ needs.precheck.outputs.alive == 'true' }}
+    if: ${{ needs.precheck.outputs.exists == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Check out Git repository
@@ -58,7 +60,7 @@ jobs:
         env:
           repo_name: ${{ github.event.repository.name }}
           repo_description: ${{ env.repo_description }}
-        run: exec ${{ github.workspace }}/scripts/runOnce.sh
+        run: exec ${{ github.workspace }}/scripts/init/runOnce.sh
 
       - name: Delete Template Readme
         run: rm ${{ github.workspace }}/README.md
